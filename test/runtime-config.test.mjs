@@ -5,9 +5,12 @@ import os from "node:os";
 import path from "node:path";
 
 import {
+  getRuntimeConfigState,
   loadRuntimeConfig,
+  readRuntimeConfigFile,
   resolveConfigPath,
-  resolveImageDataRoot
+  resolveImageDataRoot,
+  writeRuntimeConfigFile
 } from "../lib/runtime-config.mjs";
 
 test("resolveConfigPath prefers IMAGEGEN_CONFIG_PATH", () => {
@@ -67,4 +70,90 @@ test("loadRuntimeConfig reads the generic public config file", async () => {
   assert.equal(config.baseUrl, "https://example.test/v1");
   assert.equal(config.apiKey, "sk-test");
   assert.equal(config.model, "gpt-image-2");
+});
+
+test("readRuntimeConfigFile returns an empty config when the file is missing", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  const result = await readRuntimeConfigFile({ configPath });
+
+  assert.equal(result.exists, false);
+  assert.equal(result.configPath, configPath);
+  assert.deepEqual(result.fileConfig, {});
+});
+
+test("readRuntimeConfigFile preserves malformed JSON errors", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  await fs.writeFile(configPath, "{", "utf8");
+
+  await assert.rejects(() => readRuntimeConfigFile({ configPath }), SyntaxError);
+});
+
+test("getRuntimeConfigState reports env overrides and defaults", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  await fs.writeFile(
+    configPath,
+    JSON.stringify(
+      {
+        baseUrl: "https://file.example/v1",
+        apiKey: "sk-file"
+      },
+      null,
+      2
+    ),
+    "utf8"
+  );
+
+  const result = await getRuntimeConfigState({
+    env: {
+      HOME: "/Users/example",
+      IMAGEGEN_API_KEY: "sk-env"
+    },
+    configPath
+  });
+
+  assert.equal(result.configPath, configPath);
+  assert.deepEqual(result.fileConfig, {
+    baseUrl: "https://file.example/v1",
+    apiKey: "sk-file",
+    model: ""
+  });
+  assert.deepEqual(result.effectiveConfig, {
+    baseUrl: "https://file.example/v1",
+    apiKey: "sk-env",
+    model: "gpt-image-2"
+  });
+  assert.deepEqual(result.fieldSources, {
+    baseUrl: "file",
+    apiKey: "env",
+    model: "default"
+  });
+  assert.equal(result.hasOverrides, true);
+});
+
+test("writeRuntimeConfigFile creates the parent directory and normalizes baseUrl", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "nested", "config.json");
+
+  await writeRuntimeConfigFile({
+    configPath,
+    config: {
+      baseUrl: "https://example.test",
+      apiKey: "  sk-test  ",
+      model: " custom-model "
+    }
+  });
+
+  const saved = JSON.parse(await fs.readFile(configPath, "utf8"));
+
+  assert.deepEqual(saved, {
+    baseUrl: "https://example.test/v1",
+    apiKey: "sk-test",
+    model: "custom-model"
+  });
 });

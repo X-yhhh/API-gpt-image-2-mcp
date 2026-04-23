@@ -27,6 +27,11 @@
 npm install
 ```
 
+如果你是要接入本地 MCP 客户端，详细说明见：
+
+- [Local MCP Setup Guide](./docs/local-mcp-setup.md)
+- [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
+
 本地运行：
 
 ```bash
@@ -38,6 +43,36 @@ HTTP 模式运行：
 ```bash
 npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
 ```
+
+当服务以 HTTP 模式运行时，可通过以下地址打开轻量配置页面：
+
+```text
+http://127.0.0.1:3000/ui
+```
+
+该页面会直接读取和写回服务实际使用的 `config.json`。如果设置了任意 `IMAGEGEN_*` 环境变量，页面会提示当前运行值正在被环境变量覆盖。
+
+### 本地可视化配置流程
+
+如果你希望通过浏览器页面来配置本地 MCP，而不是手动编辑 JSON，可以按下面的流程操作：
+
+1. 先临时以 HTTP 模式启动一次服务：
+
+```bash
+npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
+```
+
+2. 打开：
+
+```text
+http://127.0.0.1:3000/ui
+```
+
+3. 填写 `Base URL`、`API Key` 和 `Model`，然后点击 `Save config`
+4. 保存完成后停止这个 HTTP 服务
+5. 最终在你的 MCP 客户端里仍然按普通 `stdio` 方式接入
+
+这个页面本身仍然是本地使用场景。页面里显示的配置路径，指的是“当前运行服务的这台机器”的路径。
 
 ## 配置
 

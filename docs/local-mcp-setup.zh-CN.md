@@ -47,6 +47,24 @@ mkdir -p ~/.config/mcp-imagegen-server
 }
 ```
 
+### 可选：通过内置本地页面完成配置
+
+如果你不想手动编辑 JSON，也可以临时把服务以 HTTP 模式启动一次，然后用内置页面完成配置：
+
+```bash
+npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
+```
+
+接着打开：
+
+```text
+http://127.0.0.1:3000/ui
+```
+
+在页面里填写并保存 `Base URL`、`API Key` 和 `Model`，它会直接写入本地真实配置文件。保存完成后，关闭这个 HTTP 服务，再继续按下面的普通本地 `stdio` 方式接入即可。
+
+页面里显示的配置路径，始终对应“当前运行这个服务的机器”的本地路径。
+
 ## 4. 把 MCP 服务添加到本地客户端
 
 本地使用时请走默认的 `stdio` 传输，不需要额外加 `--transport http`。
