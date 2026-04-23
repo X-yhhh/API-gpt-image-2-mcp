@@ -1,6 +1,6 @@
 # Release Policy
 
-`v0.4.1` is the first unified cross-platform release baseline for `mcp-imagegen-server`.
+`v0.4.1` is the current public release baseline for `mcp-imagegen-server`.
 
 ## Active Release Line
 
@@ -14,11 +14,10 @@ The old platform-specific release branches have been retired after the unified `
 
 Do not recreate or advance `release/macos-*` or `release/windows-*` for normal patch work. Apply cross-platform fixes to `main` and publish a new tag instead.
 
-## Version History
+## Current Version
 
-- `v0.3.0`: macOS / Unix-focused historical release line
-- `v0.4.0`: first release line with Windows local-path support
-- `v0.4.1`: first unified cross-platform release baseline
+- `v0.4.1`: current public release baseline
+- Future releases continue from `main` and treat `v0.4.1` as version `1`
 
 ## Release Checklist
 

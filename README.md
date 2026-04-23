@@ -6,7 +6,7 @@
 
 Current release support:
 
-- `v0.4.1+` is the unified cross-platform release line for macOS, Unix-like environments, and Windows local usage
+- `v0.4.1` is the current cross-platform release baseline for macOS, Unix-like environments, and Windows local usage
 - `main` is the only active release branch; old platform-specific `release/*` branches have been retired
 
 It exposes two MCP tools:
@@ -413,11 +413,9 @@ After setup, the MCP server exposes:
 - `generate_image`
 - `edit_image`
 
-## Release History
+## Current Version
 
-- `v0.3.0`: macOS / Unix-focused historical release line
-- `v0.4.0`: first release line with Windows local-path support
-- `v0.4.1`: first unified cross-platform release baseline; future releases ship from `main` and tags are the release source of truth
+- `v0.4.1`: current and only documented public release baseline; future releases ship from `main` and use this baseline as version `1`
 
 Release policy details: [Release Policy](./docs/release-policy.md)
 
