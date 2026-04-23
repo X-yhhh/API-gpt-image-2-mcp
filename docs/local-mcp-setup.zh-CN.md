@@ -4,8 +4,6 @@
 
 英文版见 [English version](./local-mcp-setup.md)。
 
-本教程当前面向 macOS 与类 Unix shell。Windows 接入说明将在 `v0.4.0` 中补齐。
-
 ## 1. 环境要求
 
 请先确保本机具备：
@@ -27,7 +25,7 @@ npm install
 
 推荐使用配置文件方式。
 
-先创建配置目录：
+在 macOS / Linux 下，先创建配置目录：
 
 ```bash
 mkdir -p ~/.config/mcp-imagegen-server
@@ -37,6 +35,18 @@ mkdir -p ~/.config/mcp-imagegen-server
 
 ```text
 ~/.config/mcp-imagegen-server/config.json
+```
+
+在 Windows 下，可以先执行：
+
+```powershell
+New-Item -ItemType Directory -Force "$env:APPDATA\\mcp-imagegen-server" | Out-Null
+```
+
+然后把配置文件放到：
+
+```text
+%APPDATA%\mcp-imagegen-server\config.json
 ```
 
 示例内容：
@@ -92,6 +102,19 @@ http://127.0.0.1:3000/ui
     "imagegen": {
       "command": "/绝对路径/node",
       "args": ["/绝对路径/API-gpt-image-2-mcp/server.mjs"]
+    }
+  }
+}
+```
+
+Windows 示例：
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
     }
   }
 }

@@ -35,6 +35,28 @@ test("resolveConfigPath falls back to XDG config home", () => {
   assert.equal(result, "/Users/example/.config/mcp-imagegen-server/config.json");
 });
 
+test("resolveConfigPath uses APPDATA on Windows", () => {
+  const result = resolveConfigPath({
+    env: {
+      APPDATA: "C:\\Users\\example\\AppData\\Roaming"
+    },
+    platform: "win32"
+  });
+
+  assert.equal(result, "C:\\Users\\example\\AppData\\Roaming\\mcp-imagegen-server\\config.json");
+});
+
+test("resolveConfigPath falls back to USERPROFILE on Windows", () => {
+  const result = resolveConfigPath({
+    env: {
+      USERPROFILE: "C:\\Users\\example"
+    },
+    platform: "win32"
+  });
+
+  assert.equal(result, "C:\\Users\\example\\AppData\\Roaming\\mcp-imagegen-server\\config.json");
+});
+
 test("resolveImageDataRoot uses XDG data home", () => {
   const result = resolveImageDataRoot({
     env: {
@@ -44,6 +66,28 @@ test("resolveImageDataRoot uses XDG data home", () => {
   });
 
   assert.equal(result, "/Users/example/.local/share/mcp-imagegen-server/images");
+});
+
+test("resolveImageDataRoot uses LOCALAPPDATA on Windows", () => {
+  const result = resolveImageDataRoot({
+    env: {
+      LOCALAPPDATA: "C:\\Users\\example\\AppData\\Local"
+    },
+    platform: "win32"
+  });
+
+  assert.equal(result, "C:\\Users\\example\\AppData\\Local\\mcp-imagegen-server\\images");
+});
+
+test("resolveImageDataRoot falls back to USERPROFILE on Windows", () => {
+  const result = resolveImageDataRoot({
+    env: {
+      USERPROFILE: "C:\\Users\\example"
+    },
+    platform: "win32"
+  });
+
+  assert.equal(result, "C:\\Users\\example\\AppData\\Local\\mcp-imagegen-server\\images");
 });
 
 test("loadRuntimeConfig reads the generic public config file", async () => {

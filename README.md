@@ -6,8 +6,8 @@
 
 Current release support:
 
-- officially supported for macOS and Unix-like local usage
-- Windows support is planned for `v0.4.0`
+- officially supported for macOS, Unix-like environments, and Windows local usage
+- Windows support targets Node.js 20+ with PowerShell or CMD
 
 It exposes two MCP tools:
 
@@ -93,7 +93,7 @@ Supported environment variables:
 - `IMAGEGEN_MODEL`
 - `IMAGEGEN_CONFIG_PATH`
 
-Default config path:
+Default config path on macOS and Linux:
 
 ```text
 $XDG_CONFIG_HOME/mcp-imagegen-server/config.json
@@ -103,6 +103,12 @@ If `XDG_CONFIG_HOME` is not set, the fallback is:
 
 ```text
 ~/.config/mcp-imagegen-server/config.json
+```
+
+Default config path on Windows:
+
+```text
+%APPDATA%\mcp-imagegen-server\config.json
 ```
 
 Example config file:
@@ -117,7 +123,7 @@ Example config file:
 
 ## Output Files
 
-If `outputDir` is not provided, images are written under:
+If `outputDir` is not provided, images are written under this root on macOS and Linux:
 
 ```text
 $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
@@ -127,6 +133,12 @@ If `XDG_DATA_HOME` is not set, the fallback is:
 
 ```text
 ~/.local/share/mcp-imagegen-server/images/<project-name>/
+```
+
+On Windows, the default output root is:
+
+```text
+%LOCALAPPDATA%\mcp-imagegen-server\images\<project-name>\
 ```
 
 If `projectName` is omitted, the server derives one from the current working directory when possible.

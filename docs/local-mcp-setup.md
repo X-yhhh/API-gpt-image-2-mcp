@@ -2,9 +2,7 @@
 
 This guide explains how a normal user can configure `mcp-imagegen-server` for local use.
 
-For Chinese instructions, see [README.zh-CN](./local-mcp-setup.zh-CN.md).
-
-This guide currently targets macOS and Unix-like shells. Windows setup will be documented in `v0.4.0`.
+For Chinese instructions, see [本地 MCP 接入教程](./local-mcp-setup.zh-CN.md).
 
 ## 1. Prerequisites
 
@@ -27,7 +25,7 @@ npm install
 
 Using a config file is the recommended approach.
 
-Create the config directory:
+Create the config directory on macOS or Linux:
 
 ```bash
 mkdir -p ~/.config/mcp-imagegen-server
@@ -37,6 +35,18 @@ Create this file:
 
 ```text
 ~/.config/mcp-imagegen-server/config.json
+```
+
+On Windows, create:
+
+```powershell
+New-Item -ItemType Directory -Force "$env:APPDATA\\mcp-imagegen-server" | Out-Null
+```
+
+Then place the config file at:
+
+```text
+%APPDATA%\mcp-imagegen-server\config.json
 ```
 
 Example:
@@ -84,7 +94,7 @@ Add a server entry like this to your MCP client config:
 }
 ```
 
-If `node` is not available in your PATH, use its absolute path instead:
+If `node` is not available in your PATH, use its absolute path instead.
 
 ```json
 {
@@ -92,6 +102,19 @@ If `node` is not available in your PATH, use its absolute path instead:
     "imagegen": {
       "command": "/absolute/path/to/node",
       "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+    }
+  }
+}
+```
+
+Windows example:
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
     }
   }
 }

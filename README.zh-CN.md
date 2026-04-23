@@ -6,8 +6,8 @@
 
 当前版本支持范围：
 
-- 正式支持 macOS 与类 Unix 环境下的本地使用
-- Windows 支持计划在 `v0.4.0` 提供
+- 正式支持 macOS、类 Unix 环境以及 Windows 下的本地使用
+- Windows 支持面向 Node.js 20+，使用 PowerShell 或 CMD
 
 它暴露了两个 MCP 工具：
 
@@ -93,7 +93,7 @@ http://127.0.0.1:3000/ui
 - `IMAGEGEN_MODEL`
 - `IMAGEGEN_CONFIG_PATH`
 
-默认配置文件路径：
+macOS / Linux 默认配置文件路径：
 
 ```text
 $XDG_CONFIG_HOME/mcp-imagegen-server/config.json
@@ -103,6 +103,12 @@ $XDG_CONFIG_HOME/mcp-imagegen-server/config.json
 
 ```text
 ~/.config/mcp-imagegen-server/config.json
+```
+
+Windows 默认配置文件路径：
+
+```text
+%APPDATA%\mcp-imagegen-server\config.json
 ```
 
 配置文件示例：
@@ -117,7 +123,7 @@ $XDG_CONFIG_HOME/mcp-imagegen-server/config.json
 
 ## 输出文件
 
-如果未提供 `outputDir`，图片会写入：
+如果未提供 `outputDir`，macOS / Linux 下图片默认会写入：
 
 ```text
 $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
@@ -127,6 +133,12 @@ $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
 
 ```text
 ~/.local/share/mcp-imagegen-server/images/<project-name>/
+```
+
+Windows 下默认输出根目录为：
+
+```text
+%LOCALAPPDATA%\mcp-imagegen-server\images\<project-name>\
 ```
 
 如果省略 `projectName`，服务会在可能的情况下根据当前工作目录自动推导项目名。
