@@ -32,15 +32,6 @@
 npm install
 ```
 
-如果你是要接入本地 MCP 客户端，详细说明见：
-
-- [Local MCP Setup Guide](./docs/local-mcp-setup.md)
-- [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
-- [Client Config Examples](./docs/client-configs.md)
-- [客户端配置示例](./docs/client-configs.zh-CN.md)
-- [Release Policy](./docs/release-policy.md)
-- [发布策略](./docs/release-policy.zh-CN.md)
-
 本地运行：
 
 ```bash
@@ -95,6 +86,12 @@ Windows 默认配置文件路径：
 }
 ```
 
+如果你不想依赖默认配置文件路径，也可以在 MCP 客户端配置里传这些环境变量：
+
+- `IMAGEGEN_BASE_URL`
+- `IMAGEGEN_API_KEY`
+- `IMAGEGEN_MODEL`
+
 ## 输出文件
 
 如果未提供 `outputDir`，macOS / Linux 下图片默认会写入：
@@ -138,16 +135,291 @@ Windows 下默认输出根目录为：
 }
 ```
 
-如果你需要 Codex、Claude Code、OpenClaw、OpenCode 的可复制客户端配置示例，请参考：
+下面的客户端专用示例统一推荐使用 `node + server.mjs`。这在 macOS、Linux、Windows 上最稳定，也更容易排查路径问题。
 
-- [Client Config Examples](./docs/client-configs.md)
-- [客户端配置示例](./docs/client-configs.zh-CN.md)
+## 本地 MCP 接入
+
+推荐路径：
+
+1. 安装项目。
+2. 创建图像网关配置文件 `config.json`。
+3. 在 MCP 客户端里用 `stdio` 方式添加服务。
+4. 重启 MCP 客户端。
+5. 验证 `generate_image` 和 `edit_image` 已经出现。
+
+如果你想先手动确认脚本能启动：
+
+```bash
+node /absolute/path/to/API-gpt-image-2-mcp/server.mjs --help
+```
+
+## 通用客户端配置
+
+最小本地 server 配置：
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+}
+```
+
+带显式环境变量：
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+  "env": {
+    "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+    "IMAGEGEN_API_KEY": "your-api-key",
+    "IMAGEGEN_MODEL": "gpt-image-2"
+  }
+}
+```
+
+## Codex
+
+配置文件：
+
+```text
+macOS / Linux：~/.codex/config.toml
+Windows：%USERPROFILE%\.codex\config.toml
+```
+
+最小本地 server 配置：
+
+```toml
+[mcp_servers.imagegen]
+command = "node"
+args = ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+```
+
+带显式环境变量：
+
+```toml
+[mcp_servers.imagegen]
+command = "node"
+args = ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+
+[mcp_servers.imagegen.env]
+IMAGEGEN_BASE_URL = "https://your-gateway.example/v1"
+IMAGEGEN_API_KEY = "your-api-key"
+IMAGEGEN_MODEL = "gpt-image-2"
+```
+
+等价 CLI：
+
+```bash
+codex mcp add imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+带显式环境变量：
+
+```bash
+codex mcp add imagegen \
+  --env IMAGEGEN_BASE_URL=https://your-gateway.example/v1 \
+  --env IMAGEGEN_API_KEY=your-api-key \
+  --env IMAGEGEN_MODEL=gpt-image-2 \
+  -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+## Claude Code
+
+推荐配置位置：
+
+```text
+项目级：.mcp.json
+用户级：~/.claude.json
+Windows 用户级：%USERPROFILE%\.claude.json
+```
+
+推荐使用 CLI 添加：
+
+```bash
+claude mcp add --transport stdio imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+带显式环境变量：
+
+```bash
+claude mcp add --transport stdio \
+  -e IMAGEGEN_BASE_URL=https://your-gateway.example/v1 \
+  -e IMAGEGEN_API_KEY=your-api-key \
+  -e IMAGEGEN_MODEL=gpt-image-2 \
+  imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+手动 JSON 配置：
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "node",
+      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+    }
+  }
+}
+```
+
+带显式环境变量：
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "node",
+      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "env": {
+        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+        "IMAGEGEN_API_KEY": "your-api-key",
+        "IMAGEGEN_MODEL": "gpt-image-2"
+      }
+    }
+  }
+}
+```
+
+## OpenClaw
+
+配置文件：
+
+```text
+macOS / Linux：~/.openclaw/openclaw.json
+Windows：%USERPROFILE%\.openclaw\openclaw.json
+```
+
+最小本地 server 配置：
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "imagegen": {
+        "command": "node",
+        "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+      }
+    }
+  }
+}
+```
+
+带显式环境变量：
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "imagegen": {
+        "command": "node",
+        "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+        "env": {
+          "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+          "IMAGEGEN_API_KEY": "your-api-key",
+          "IMAGEGEN_MODEL": "gpt-image-2"
+        }
+      }
+    }
+  }
+}
+```
+
+## OpenCode
+
+推荐配置位置：
+
+```text
+项目级：opencode.json
+全局 macOS / Linux：~/.config/opencode/opencode.json
+全局 Windows：%USERPROFILE%\.config\opencode\opencode.json
+```
+
+最小本地 server 配置：
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "imagegen": {
+      "type": "local",
+      "command": ["node", "/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "enabled": true
+    }
+  }
+}
+```
+
+带显式环境变量：
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "imagegen": {
+      "type": "local",
+      "command": ["node", "/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "enabled": true,
+      "environment": {
+        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+        "IMAGEGEN_API_KEY": "your-api-key",
+        "IMAGEGEN_MODEL": "gpt-image-2"
+      }
+    }
+  }
+}
+```
+
+## 平台路径说明
+
+macOS / Linux 绝对路径示例：
+
+```json
+{
+  "command": "/usr/local/bin/node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+}
+```
+
+Windows 绝对路径示例：
+
+```json
+{
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
+}
+```
+
+修改 MCP 配置后，请重启对应客户端。
+
+## 验证接入
+
+可以在客户端里尝试类似下面的请求。
+
+生成图片：
+
+```text
+请生成一张极简风格的白色陶瓷杯产品图，纯色背景。
+```
+
+编辑图片：
+
+```text
+请把这张图片背景改成纯白，并保留主体阴影。
+```
+
+接入成功后，服务会暴露以下工具：
+
+- `generate_image`
+- `edit_image`
 
 ## 版本历史
 
 - `v0.3.0`：面向 macOS / 类 Unix 的历史发布线
 - `v0.4.0`：首次补齐 Windows 本地路径支持的发布线
 - `v0.4.1`：第一个统一的跨平台发布基线；后续版本统一从 `main` 发布，并以 tag 作为版本事实来源
+
+发布策略说明见：[发布策略](./docs/release-policy.zh-CN.md)
 
 ## 开发
 

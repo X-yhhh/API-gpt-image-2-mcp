@@ -32,15 +32,6 @@ The server supports both:
 npm install
 ```
 
-For local MCP client setup, see the detailed guide:
-
-- [Local MCP Setup Guide](./docs/local-mcp-setup.md)
-- [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
-- [Client Config Examples](./docs/client-configs.md)
-- [客户端配置示例](./docs/client-configs.zh-CN.md)
-- [Release Policy](./docs/release-policy.md)
-- [发布策略](./docs/release-policy.zh-CN.md)
-
 For local execution:
 
 ```bash
@@ -95,6 +86,12 @@ Example config file:
 }
 ```
 
+If you do not want to rely on the default config file path, you can pass runtime settings through the MCP client config with:
+
+- `IMAGEGEN_BASE_URL`
+- `IMAGEGEN_API_KEY`
+- `IMAGEGEN_MODEL`
+
 ## Output Files
 
 If `outputDir` is not provided, images are written under this root on macOS and Linux:
@@ -138,16 +135,291 @@ Any MCP client that accepts a command-based server config can launch:
 }
 ```
 
-For ready-to-paste client-specific examples for Codex, Claude Code, OpenClaw, and OpenCode, see:
+For the client-specific examples below, prefer `node` plus an absolute `server.mjs` path. It is the most predictable setup across macOS, Linux, and Windows.
 
-- [Client Config Examples](./docs/client-configs.md)
-- [客户端配置示例](./docs/client-configs.zh-CN.md)
+## Local MCP Setup
+
+Recommended path:
+
+1. Install the project.
+2. Create `config.json` for the image gateway.
+3. Add the server to your MCP client with `stdio`.
+4. Restart the MCP client.
+5. Verify `generate_image` and `edit_image` are available.
+
+If you need a manual check first:
+
+```bash
+node /absolute/path/to/API-gpt-image-2-mcp/server.mjs --help
+```
+
+## Generic Client Config
+
+Minimal local server:
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+}
+```
+
+With explicit env:
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+  "env": {
+    "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+    "IMAGEGEN_API_KEY": "your-api-key",
+    "IMAGEGEN_MODEL": "gpt-image-2"
+  }
+}
+```
+
+## Codex
+
+Config file:
+
+```text
+macOS / Linux: ~/.codex/config.toml
+Windows: %USERPROFILE%\.codex\config.toml
+```
+
+Minimal local server:
+
+```toml
+[mcp_servers.imagegen]
+command = "node"
+args = ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+```
+
+With explicit env:
+
+```toml
+[mcp_servers.imagegen]
+command = "node"
+args = ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+
+[mcp_servers.imagegen.env]
+IMAGEGEN_BASE_URL = "https://your-gateway.example/v1"
+IMAGEGEN_API_KEY = "your-api-key"
+IMAGEGEN_MODEL = "gpt-image-2"
+```
+
+Equivalent CLI:
+
+```bash
+codex mcp add imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+With explicit env:
+
+```bash
+codex mcp add imagegen \
+  --env IMAGEGEN_BASE_URL=https://your-gateway.example/v1 \
+  --env IMAGEGEN_API_KEY=your-api-key \
+  --env IMAGEGEN_MODEL=gpt-image-2 \
+  -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+## Claude Code
+
+Recommended config location:
+
+```text
+Project scope: .mcp.json
+User scope: ~/.claude.json
+Windows user scope: %USERPROFILE%\.claude.json
+```
+
+Recommended CLI setup:
+
+```bash
+claude mcp add --transport stdio imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+With explicit env:
+
+```bash
+claude mcp add --transport stdio \
+  -e IMAGEGEN_BASE_URL=https://your-gateway.example/v1 \
+  -e IMAGEGEN_API_KEY=your-api-key \
+  -e IMAGEGEN_MODEL=gpt-image-2 \
+  imagegen -- node /absolute/path/to/API-gpt-image-2-mcp/server.mjs
+```
+
+Manual JSON config:
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "node",
+      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+    }
+  }
+}
+```
+
+With explicit env:
+
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "node",
+      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "env": {
+        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+        "IMAGEGEN_API_KEY": "your-api-key",
+        "IMAGEGEN_MODEL": "gpt-image-2"
+      }
+    }
+  }
+}
+```
+
+## OpenClaw
+
+Config file:
+
+```text
+macOS / Linux: ~/.openclaw/openclaw.json
+Windows: %USERPROFILE%\.openclaw\openclaw.json
+```
+
+Minimal local server:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "imagegen": {
+        "command": "node",
+        "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+      }
+    }
+  }
+}
+```
+
+With explicit env:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "imagegen": {
+        "command": "node",
+        "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+        "env": {
+          "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+          "IMAGEGEN_API_KEY": "your-api-key",
+          "IMAGEGEN_MODEL": "gpt-image-2"
+        }
+      }
+    }
+  }
+}
+```
+
+## OpenCode
+
+Recommended config location:
+
+```text
+Project scope: opencode.json
+Global macOS / Linux: ~/.config/opencode/opencode.json
+Global Windows: %USERPROFILE%\.config\opencode\opencode.json
+```
+
+Minimal local server:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "imagegen": {
+      "type": "local",
+      "command": ["node", "/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "enabled": true
+    }
+  }
+}
+```
+
+With explicit env:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "imagegen": {
+      "type": "local",
+      "command": ["node", "/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
+      "enabled": true,
+      "environment": {
+        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
+        "IMAGEGEN_API_KEY": "your-api-key",
+        "IMAGEGEN_MODEL": "gpt-image-2"
+      }
+    }
+  }
+}
+```
+
+## Platform Path Notes
+
+macOS / Linux absolute server example:
+
+```json
+{
+  "command": "/usr/local/bin/node",
+  "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
+}
+```
+
+Windows absolute server example:
+
+```json
+{
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
+}
+```
+
+Restart the client after changing its MCP config.
+
+## Verify the Integration
+
+Try requests like these inside your client.
+
+Generate an image:
+
+```text
+Generate a minimalist product photo of a white ceramic cup on a plain background.
+```
+
+Edit an image:
+
+```text
+Change the background of this image to solid white while keeping the subject shadow.
+```
+
+After setup, the MCP server exposes:
+
+- `generate_image`
+- `edit_image`
 
 ## Release History
 
 - `v0.3.0`: macOS / Unix-focused historical release line
 - `v0.4.0`: first release line with Windows local-path support
 - `v0.4.1`: first unified cross-platform release baseline; future releases ship from `main` and tags are the release source of truth
+
+Release policy details: [Release Policy](./docs/release-policy.md)
 
 ## Development
 
