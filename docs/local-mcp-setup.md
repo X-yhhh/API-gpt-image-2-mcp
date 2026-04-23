@@ -60,24 +60,6 @@ Example:
 }
 ```
 
-### Optional: configure through the built-in local web UI
-
-If you prefer not to edit JSON manually, you can temporarily start the server in HTTP mode and use the built-in config page:
-
-```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
-```
-
-Then open:
-
-```text
-http://127.0.0.1:3000/ui
-```
-
-Use the page to save `Base URL`, `API Key`, and `Model` into the real local config file, then stop the HTTP server and continue with the normal local `stdio` MCP setup below.
-
-The config path shown in the page always belongs to the machine currently running the server.
-
 ## 4. Add the MCP server to your local client
 
 For local usage, use the default `stdio` transport. Do not add `--transport http`.

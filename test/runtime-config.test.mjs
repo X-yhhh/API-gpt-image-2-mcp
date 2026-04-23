@@ -5,12 +5,10 @@ import os from "node:os";
 import path from "node:path";
 
 import {
-  getRuntimeConfigState,
   loadRuntimeConfig,
   readRuntimeConfigFile,
   resolveConfigPath,
-  resolveImageDataRoot,
-  writeRuntimeConfigFile
+  resolveImageDataRoot
 } from "../lib/runtime-config.mjs";
 
 test("resolveConfigPath prefers IMAGEGEN_CONFIG_PATH", () => {
@@ -151,88 +149,4 @@ test("readRuntimeConfigFile accepts UTF-8 BOM JSON files", async () => {
     baseUrl: "https://example.test",
     apiKey: "sk-test"
   });
-});
-
-test("getRuntimeConfigState reports env overrides and defaults", async () => {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
-  const configPath = path.join(tempRoot, "config.json");
-
-  await fs.writeFile(
-    configPath,
-    JSON.stringify(
-      {
-        baseUrl: "https://file.example/v1",
-        apiKey: "sk-file"
-      },
-      null,
-      2
-    ),
-    "utf8"
-  );
-
-  const result = await getRuntimeConfigState({
-    env: {
-      HOME: "/Users/example",
-      IMAGEGEN_API_KEY: "sk-env"
-    },
-    configPath
-  });
-
-  assert.equal(result.configPath, configPath);
-  assert.deepEqual(result.fileConfig, {
-    baseUrl: "https://file.example/v1",
-    apiKey: "sk-file",
-    model: ""
-  });
-  assert.deepEqual(result.effectiveConfig, {
-    baseUrl: "https://file.example/v1",
-    apiKey: "sk-env",
-    model: "gpt-image-2"
-  });
-  assert.deepEqual(result.fieldSources, {
-    baseUrl: "file",
-    apiKey: "env",
-    model: "default"
-  });
-  assert.equal(result.hasOverrides, true);
-});
-
-test("writeRuntimeConfigFile creates the parent directory and normalizes baseUrl", async () => {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
-  const configPath = path.join(tempRoot, "nested", "config.json");
-
-  await writeRuntimeConfigFile({
-    configPath,
-    config: {
-      baseUrl: "https://example.test",
-      apiKey: "  sk-test  ",
-      model: " custom-model "
-    }
-  });
-
-  const saved = JSON.parse(await fs.readFile(configPath, "utf8"));
-
-  assert.deepEqual(saved, {
-    baseUrl: "https://example.test/v1",
-    apiKey: "sk-test",
-    model: "custom-model"
-  });
-});
-
-test("writeRuntimeConfigFile writes UTF-8 without BOM", async () => {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
-  const configPath = path.join(tempRoot, "nested", "config.json");
-
-  await writeRuntimeConfigFile({
-    configPath,
-    config: {
-      baseUrl: "https://example.test",
-      apiKey: "sk-test",
-      model: "gpt-image-2"
-    }
-  });
-
-  const bytes = await fs.readFile(configPath);
-
-  assert.notDeepEqual([...bytes.slice(0, 3)], [0xef, 0xbb, 0xbf]);
 });

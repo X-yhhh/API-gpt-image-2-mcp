@@ -53,36 +53,6 @@ For HTTP mode:
 npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
 ```
 
-When the server is running in HTTP mode, a lightweight config console is available at:
-
-```text
-http://127.0.0.1:3000/ui
-```
-
-The page reads and writes the real `config.json` used by the server. If any `IMAGEGEN_*` environment variable is set, the UI shows that the runtime value is currently being overridden.
-
-### Visual local configuration flow
-
-If you want to configure the local MCP server through a browser UI instead of editing JSON manually:
-
-1. Start the server once in HTTP mode:
-
-```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
-```
-
-2. Open:
-
-```text
-http://127.0.0.1:3000/ui
-```
-
-3. Fill in `Base URL`, `API Key`, and `Model`, then click `Save config`
-4. Stop the HTTP server after saving
-5. Use the normal local `stdio` setup in your MCP client
-
-This UI is still local-only. The displayed config path belongs to the machine currently running the server.
-
 ## Configuration
 
 Runtime configuration is loaded in this order:
