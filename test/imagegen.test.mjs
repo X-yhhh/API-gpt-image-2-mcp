@@ -97,3 +97,28 @@ test("generateImage rejects mask-only requests before calling the edits endpoint
 
   assert.equal(fetchCalled, false);
 });
+
+test("generateImage accepts custom sizes that match the API format", async () => {
+  setRuntimeEnv();
+  const outputDir = await createTempDir();
+  const payload = Buffer.from("custom-size-bytes").toString("base64");
+  let requestBody;
+
+  installFetchStub(async (_url, options) => {
+    requestBody = JSON.parse(options.body);
+
+    return new Response(JSON.stringify({ data: [{ b64_json: payload }] }), {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    });
+  });
+
+  const result = await generateImage({
+    prompt: "custom size test",
+    size: "1235x777",
+    outputDir
+  });
+
+  assert.equal(result.size, "1235x777");
+  assert.equal(requestBody.size, "1235x777");
+});

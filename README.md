@@ -95,7 +95,7 @@ If `projectName` is omitted, the server derives one from the current working dir
 
 Supported controls include:
 
-- `size`: `1024x1024`, `1024 * 1024`, `1024×1024`, or `auto`
+- `size`: custom dimensions such as `1536x1024`, `1536 * 1024`, `1536×1024`, or `auto`
 - `latencyMode="fast"` for lower-latency drafts
 - `referenceImages` for reference-based generation
 - `inputImages` plus optional `maskImage` for editing flows

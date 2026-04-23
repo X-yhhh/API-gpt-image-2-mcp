@@ -95,7 +95,7 @@ $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
 
 支持的常用控制项包括：
 
-- `size`：`1024x1024`、`1024 * 1024`、`1024×1024` 或 `auto`
+- `size`：支持自定义尺寸，例如 `1536x1024`、`1536 * 1024`、`1536×1024`，或 `auto`
 - `latencyMode="fast"`：用于低时延草稿生成
 - `referenceImages`：用于参考图驱动的生成
 - `inputImages` 以及可选的 `maskImage`：用于编辑流程
