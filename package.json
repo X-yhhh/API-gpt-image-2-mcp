@@ -1,0 +1,40 @@
+{
+  "name": "mcp-imagegen-server",
+  "version": "0.2.0",
+  "private": false,
+  "type": "module",
+  "description": "Open-source MCP server for generating and editing images through an OpenAI-compatible image API.",
+  "license": "MIT",
+  "bin": {
+    "mcp-imagegen-server": "./server.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "lib",
+    "README.md",
+    "LICENSE",
+    "smoke-test.mjs",
+    "mcp-smoke-test.mjs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "image-generation",
+    "image-editing",
+    "openai-compatible",
+    "gpt-image-2"
+  ],
+  "scripts": {
+    "start": "node server.mjs",
+    "start:http": "node server.mjs --transport http",
+    "test": "node --test test/*.test.mjs",
+    "smoke-test": "node smoke-test.mjs",
+    "smoke-test:mcp": "node mcp-smoke-test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.3.6"
+  }
+}
