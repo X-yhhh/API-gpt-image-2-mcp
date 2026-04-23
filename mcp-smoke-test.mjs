@@ -5,15 +5,19 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const forwardedEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([name]) => name.startsWith("IMAGEGEN_"))
+);
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: [path.join(currentDirectory, "server.mjs")]
+  args: [path.join(currentDirectory, "server.mjs")],
+  env: forwardedEnv
 });
 
 const client = new Client(
   {
   name: "imagegen-smoke-client",
-    version: "0.4.0"
+    version: "0.4.1"
   },
   {
     capabilities: {}

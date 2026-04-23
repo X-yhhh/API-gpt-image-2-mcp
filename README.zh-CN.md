@@ -6,8 +6,8 @@
 
 当前版本支持范围：
 
-- 正式支持 macOS、类 Unix 环境以及 Windows 下的本地使用
-- Windows 支持面向 Node.js 20+，使用 PowerShell 或 CMD
+- `v0.4.1+` 是统一的跨平台发布线，正式支持 macOS、类 Unix 环境以及 Windows 下的本地使用
+- `main` 是唯一活跃发布分支；历史 `release/*` 分支仅保留用于旧版本参考
 
 它暴露了两个 MCP 工具：
 
@@ -36,6 +36,10 @@ npm install
 
 - [Local MCP Setup Guide](./docs/local-mcp-setup.md)
 - [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
+- [Client Config Examples](./docs/client-configs.md)
+- [客户端配置示例](./docs/client-configs.zh-CN.md)
+- [Release Policy](./docs/release-policy.md)
+- [发布策略](./docs/release-policy.zh-CN.md)
 
 本地运行：
 
@@ -163,6 +167,17 @@ Windows 下默认输出根目录为：
   "args": ["mcp-imagegen-server"]
 }
 ```
+
+如果你需要 Codex、Claude Code、OpenClaw、OpenCode 的可复制客户端配置示例，请参考：
+
+- [Client Config Examples](./docs/client-configs.md)
+- [客户端配置示例](./docs/client-configs.zh-CN.md)
+
+## 版本历史
+
+- `v0.3.0`：面向 macOS / 类 Unix 的历史发布线
+- `v0.4.0`：首次补齐 Windows 本地路径支持的发布线
+- `v0.4.1`：第一个统一的跨平台发布基线；后续版本统一从 `main` 发布，并以 tag 作为版本事实来源
 
 ## 开发
 

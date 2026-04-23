@@ -3,6 +3,7 @@
 本教程说明普通用户如何在本地接入和使用 `mcp-imagegen-server`。
 
 英文版见 [English version](./local-mcp-setup.md)。
+如果你需要 Codex、Claude Code、OpenClaw、OpenCode 的客户端专用配置示例，请查看 [客户端配置示例](./client-configs.zh-CN.md)。
 
 ## 1. 环境要求
 
@@ -80,6 +81,7 @@ http://127.0.0.1:3000/ui
 ## 4. 把 MCP 服务添加到本地客户端
 
 本地使用时请走默认的 `stdio` 传输，不需要额外加 `--transport http`。
+如果你希望直接复制特定客户端的配置片段，请使用 [客户端配置示例](./client-configs.zh-CN.md)。
 
 在你的 MCP 客户端配置中加入类似下面的服务定义：
 

@@ -3,6 +3,7 @@
 This guide explains how a normal user can configure `mcp-imagegen-server` for local use.
 
 For Chinese instructions, see [本地 MCP 接入教程](./local-mcp-setup.zh-CN.md).
+For client-specific examples for Codex, Claude Code, OpenClaw, and OpenCode, see [Client Config Examples](./client-configs.md).
 
 ## 1. Prerequisites
 
@@ -80,6 +81,7 @@ The config path shown in the page always belongs to the machine currently runnin
 ## 4. Add the MCP server to your local client
 
 For local usage, use the default `stdio` transport. Do not add `--transport http`.
+If you need a ready-to-paste config for a specific client, use [Client Config Examples](./client-configs.md).
 
 Add a server entry like this to your MCP client config:
 

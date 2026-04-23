@@ -6,8 +6,8 @@
 
 Current release support:
 
-- officially supported for macOS, Unix-like environments, and Windows local usage
-- Windows support targets Node.js 20+ with PowerShell or CMD
+- `v0.4.1+` is the unified cross-platform release line for macOS, Unix-like environments, and Windows local usage
+- `main` is the only active release branch; historical `release/*` branches remain read-only references for older releases
 
 It exposes two MCP tools:
 
@@ -36,6 +36,10 @@ For local MCP client setup, see the detailed guide:
 
 - [Local MCP Setup Guide](./docs/local-mcp-setup.md)
 - [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
+- [Client Config Examples](./docs/client-configs.md)
+- [客户端配置示例](./docs/client-configs.zh-CN.md)
+- [Release Policy](./docs/release-policy.md)
+- [发布策略](./docs/release-policy.zh-CN.md)
 
 For local execution:
 
@@ -163,6 +167,17 @@ Any MCP client that accepts a command-based server config can launch:
   "args": ["mcp-imagegen-server"]
 }
 ```
+
+For ready-to-paste client-specific examples for Codex, Claude Code, OpenClaw, and OpenCode, see:
+
+- [Client Config Examples](./docs/client-configs.md)
+- [客户端配置示例](./docs/client-configs.zh-CN.md)
+
+## Release History
+
+- `v0.3.0`: macOS / Unix-focused historical release line
+- `v0.4.0`: first release line with Windows local-path support
+- `v0.4.1`: first unified cross-platform release baseline; future releases ship from `main` and tags are the release source of truth
 
 ## Development
 
