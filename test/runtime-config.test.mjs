@@ -136,6 +136,23 @@ test("readRuntimeConfigFile preserves malformed JSON errors", async () => {
   await assert.rejects(() => readRuntimeConfigFile({ configPath }), SyntaxError);
 });
 
+test("readRuntimeConfigFile accepts UTF-8 BOM JSON files", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  await fs.writeFile(
+    configPath,
+    Buffer.from(`\uFEFF${JSON.stringify({ baseUrl: "https://example.test", apiKey: "sk-test" })}\n`, "utf8")
+  );
+
+  const result = await readRuntimeConfigFile({ configPath });
+
+  assert.deepEqual(result.fileConfig, {
+    baseUrl: "https://example.test",
+    apiKey: "sk-test"
+  });
+});
+
 test("getRuntimeConfigState reports env overrides and defaults", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
   const configPath = path.join(tempRoot, "config.json");
@@ -200,4 +217,22 @@ test("writeRuntimeConfigFile creates the parent directory and normalizes baseUrl
     apiKey: "sk-test",
     model: "custom-model"
   });
+});
+
+test("writeRuntimeConfigFile writes UTF-8 without BOM", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "nested", "config.json");
+
+  await writeRuntimeConfigFile({
+    configPath,
+    config: {
+      baseUrl: "https://example.test",
+      apiKey: "sk-test",
+      model: "gpt-image-2"
+    }
+  });
+
+  const bytes = await fs.readFile(configPath);
+
+  assert.notDeepEqual([...bytes.slice(0, 3)], [0xef, 0xbb, 0xbf]);
 });
