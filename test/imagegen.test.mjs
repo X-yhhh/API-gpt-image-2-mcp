@@ -98,6 +98,61 @@ test("generateImage rejects mask-only requests before calling the edits endpoint
   assert.equal(fetchCalled, false);
 });
 
+test("generateImage accepts parameterized base64 data URLs for reference images", async () => {
+  setRuntimeEnv();
+  const outputDir = await createTempDir();
+  const payload = Buffer.from("referenced-image").toString("base64");
+  let uploadedFile;
+
+  installFetchStub(async (url, options) => {
+    assert.match(url, /\/images\/edits$/);
+    const files = options.body.getAll("image[]");
+    assert.equal(files.length, 1);
+    [uploadedFile] = files;
+
+    return new Response(JSON.stringify({ data: [{ b64_json: payload }] }), {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    });
+  });
+
+  const result = await generateImage({
+    prompt: "parameterized data url",
+    referenceImages: ["data:image/png;charset=utf-8;base64,AA=="],
+    outputDir
+  });
+
+  assert.equal(result.referenceImageCount, 1);
+  assert.equal(uploadedFile.type, "image/png");
+  assert.match(uploadedFile.name, /\.png$/);
+});
+
+test("generateImage preserves SVG uploads for metadata-rich data URLs", async () => {
+  setRuntimeEnv();
+  const outputDir = await createTempDir();
+  const payload = Buffer.from("svg-image").toString("base64");
+  const svgDataUrl = `data:image/svg+xml;name=icon;base64,${Buffer.from("<svg/>").toString("base64")}`;
+  let uploadedFile;
+
+  installFetchStub(async (_url, options) => {
+    [uploadedFile] = options.body.getAll("image[]");
+
+    return new Response(JSON.stringify({ data: [{ b64_json: payload }] }), {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    });
+  });
+
+  await generateImage({
+    prompt: "svg data url",
+    referenceImages: [svgDataUrl],
+    outputDir
+  });
+
+  assert.equal(uploadedFile.type, "image/svg+xml");
+  assert.match(uploadedFile.name, /\.svg$/);
+});
+
 test("generateImage accepts custom sizes that match the API format", async () => {
   setRuntimeEnv();
   const outputDir = await createTempDir();
