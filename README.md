@@ -7,7 +7,7 @@
 Current release support:
 
 - `v0.4.1+` is the unified cross-platform release line for macOS, Unix-like environments, and Windows local usage
-- `main` is the only active release branch; historical `release/*` branches remain read-only references for older releases
+- `main` is the only active release branch; old platform-specific `release/*` branches have been retired
 
 It exposes two MCP tools:
 

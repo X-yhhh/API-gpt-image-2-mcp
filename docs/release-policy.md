@@ -8,14 +8,11 @@
 - Release tags are the source of truth for published versions.
 - Do not create long-lived platform-specific release branches unless the implementation must truly diverge by operating system.
 
-## Historical Branches
+## Retired Branches
 
-These branches are retained as read-only references for older releases:
+The old platform-specific release branches have been retired after the unified `v0.4.1` release.
 
-- `release/macos-v0.3.0`: macOS / Unix-focused historical line
-- `release/windows-v0.4.0`: Windows-support historical line
-
-Do not advance these branches for normal patch work. Apply cross-platform fixes to `main` and publish a new tag instead.
+Do not recreate or advance `release/macos-*` or `release/windows-*` for normal patch work. Apply cross-platform fixes to `main` and publish a new tag instead.
 
 ## Version History
 
