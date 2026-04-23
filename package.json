@@ -11,8 +11,11 @@
   "files": [
     "server.mjs",
     "lib",
+    "docs",
     "README.md",
     "LICENSE",
+    "start-configure.ps1",
+    "start-http.ps1",
     "smoke-test.mjs",
     "mcp-smoke-test.mjs"
   ],
@@ -28,6 +31,7 @@
   ],
   "scripts": {
     "start": "node server.mjs",
+    "configure": "node server.mjs --configure",
     "start:http": "node server.mjs --transport http",
     "test": "node --test test/*.test.mjs",
     "smoke-test": "node smoke-test.mjs",

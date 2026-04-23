@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import {
+  RuntimeConfigUsageError,
   getRuntimeConfigState,
   loadRuntimeConfig,
   readRuntimeConfigFile,
@@ -116,6 +117,31 @@ test("loadRuntimeConfig reads the generic public config file", async () => {
   assert.equal(config.model, "gpt-image-2");
 });
 
+test("loadRuntimeConfig explains how to configure missing baseUrl and apiKey", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  await assert.rejects(
+    () =>
+      loadRuntimeConfig({
+        env: {
+          HOME: "/Users/example"
+        },
+        configPath
+      }),
+    (error) => {
+      assert.ok(error instanceof RuntimeConfigUsageError);
+      assert.deepEqual(error.missingFields, ["baseUrl", "apiKey"]);
+      assert.equal(error.configPath, configPath);
+      assert.match(error.message, /configure the runtime settings before using the image tools/i);
+      assert.match(error.message, /base url/i);
+      assert.match(error.message, /api key/i);
+      assert.match(error.message, /--configure/);
+      return true;
+    }
+  );
+});
+
 test("readRuntimeConfigFile returns an empty config when the file is missing", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
   const configPath = path.join(tempRoot, "config.json");
@@ -134,6 +160,23 @@ test("readRuntimeConfigFile preserves malformed JSON errors", async () => {
   await fs.writeFile(configPath, "{", "utf8");
 
   await assert.rejects(() => readRuntimeConfigFile({ configPath }), SyntaxError);
+});
+
+test("readRuntimeConfigFile accepts UTF-8 BOM JSON files", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "config.json");
+
+  await fs.writeFile(
+    configPath,
+    Buffer.from(`\uFEFF${JSON.stringify({ baseUrl: "https://example.test", apiKey: "sk-test" })}\n`, "utf8")
+  );
+
+  const result = await readRuntimeConfigFile({ configPath });
+
+  assert.deepEqual(result.fileConfig, {
+    baseUrl: "https://example.test",
+    apiKey: "sk-test"
+  });
 });
 
 test("getRuntimeConfigState reports env overrides and defaults", async () => {
@@ -200,4 +243,44 @@ test("writeRuntimeConfigFile creates the parent directory and normalizes baseUrl
     apiKey: "sk-test",
     model: "custom-model"
   });
+});
+
+test("writeRuntimeConfigFile fills the default model when the field is omitted", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "nested", "config.json");
+
+  await writeRuntimeConfigFile({
+    configPath,
+    config: {
+      baseUrl: "https://example.test",
+      apiKey: "sk-test",
+      model: "   "
+    }
+  });
+
+  const saved = JSON.parse(await fs.readFile(configPath, "utf8"));
+
+  assert.deepEqual(saved, {
+    baseUrl: "https://example.test/v1",
+    apiKey: "sk-test",
+    model: "gpt-image-2"
+  });
+});
+
+test("writeRuntimeConfigFile writes UTF-8 without BOM", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-config-"));
+  const configPath = path.join(tempRoot, "nested", "config.json");
+
+  await writeRuntimeConfigFile({
+    configPath,
+    config: {
+      baseUrl: "https://example.test",
+      apiKey: "sk-test",
+      model: "gpt-image-2"
+    }
+  });
+
+  const bytes = await fs.readFile(configPath);
+
+  assert.notDeepEqual([...bytes.slice(0, 3)], [0xef, 0xbb, 0xbf]);
 });

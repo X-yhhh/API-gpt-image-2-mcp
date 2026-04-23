@@ -1,8 +1,8 @@
 # 本地 MCP 接入教程
 
-本教程说明普通用户如何在本地接入和使用 `mcp-imagegen-server`。
+本教程说明如何从本地仓库接入和使用 `mcp-imagegen-server`，不再依赖任何前端配置页面。
 
-英文版见 [English version](./local-mcp-setup.md)。
+英文版见 [Local MCP Setup Guide](./local-mcp-setup.md)。
 
 ## 1. 环境要求
 
@@ -21,155 +21,68 @@ cd API-gpt-image-2-mcp
 npm install
 ```
 
-## 3. 配置图像接口
+## 3. 运行配置命令
 
-推荐使用配置文件方式。
-
-在 macOS / Linux 下，先创建配置目录：
+在连接任何 MCP 客户端、运行任何 smoke test 之前，先执行：
 
 ```bash
-mkdir -p ~/.config/mcp-imagegen-server
+npx mcp-imagegen-server --configure
 ```
 
-然后创建这个文件：
-
-```text
-~/.config/mcp-imagegen-server/config.json
-```
-
-在 Windows 下，可以先执行：
+Windows PowerShell 下也可以直接运行：
 
 ```powershell
-New-Item -ItemType Directory -Force "$env:APPDATA\\mcp-imagegen-server" | Out-Null
+.\start-configure.ps1
 ```
 
-然后把配置文件放到：
+这个命令会自动完成：
 
-```text
-%APPDATA%\mcp-imagegen-server\config.json
-```
+1. 询问 `Base URL`
+2. 询问 `API Key`
+3. 询问可选的 `Model`
+4. 保存运行时配置文件
+5. 自动识别本地 MCP 客户端环境
+6. 自动安装对应的 MCP 服务配置
 
-示例内容：
+## 4. 自动环境处理
 
-```json
-{
-  "baseUrl": "https://your-gateway.example/v1",
-  "apiKey": "your-api-key",
-  "model": "gpt-image-2"
-}
-```
+现在不需要再手动选择配置格式。
 
-### 可选：通过内置本地页面完成配置
+配置流程会自动命中以下目标之一：
 
-如果你不想手动编辑 JSON，也可以临时把服务以 HTTP 模式启动一次，然后用内置页面完成配置：
+- Codex
+- Claude Code
+- OpenCode
+- OpenClaw
+- 如果没有明确命中，或者本地环境存在歧义，则回退到通用 MCP JSON 配置
+
+## 5. 重启客户端
+
+`--configure` 完成后，重启你的 MCP 客户端，让它重新加载服务定义。
+
+## 6. 完成配置后的可选验证
+
+在 `Base URL` 和 `API Key` 已经保存之后，你可以按下面任意一种方式验证：
+
+1. 直接让 MCP 客户端调用一次带真实 prompt 的 `generate_image`
+2. 运行库层 smoke test：
 
 ```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
+npm run smoke-test
 ```
 
-接着打开：
+3. 运行 MCP stdio smoke test：
 
-```text
-http://127.0.0.1:3000/ui
+```bash
+npm run smoke-test:mcp
 ```
 
-在页面里填写并保存 `Base URL`、`API Key` 和 `Model`，它会直接写入本地真实配置文件。保存完成后，关闭这个 HTTP 服务，再继续按下面的普通本地 `stdio` 方式接入即可。
+不要通过发送空请求或不完整请求来验证接入是否成功。这类请求很容易因为缺少 `prompt` 等业务参数而失败，不能证明 MCP 链路真的正确。
 
-页面里显示的配置路径，始终对应“当前运行这个服务的机器”的本地路径。
-
-## 4. 把 MCP 服务添加到本地客户端
-
-本地使用时请走默认的 `stdio` 传输，不需要额外加 `--transport http`。
-
-在你的 MCP 客户端配置中加入类似下面的服务定义：
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "node",
-      "args": ["/绝对路径/API-gpt-image-2-mcp/server.mjs"]
-    }
-  }
-}
-```
-
-如果你的环境里 `node` 不在 PATH 中，请改成 Node 的绝对路径：
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "/绝对路径/node",
-      "args": ["/绝对路径/API-gpt-image-2-mcp/server.mjs"]
-    }
-  }
-}
-```
-
-Windows 示例：
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
-    }
-  }
-}
-```
-
-## 5. 可选方式：使用环境变量配置
-
-如果你不想依赖默认配置文件路径，也可以直接在客户端配置里传运行时环境变量：
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "node",
-      "args": ["/绝对路径/API-gpt-image-2-mcp/server.mjs"],
-      "env": {
-        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
-        "IMAGEGEN_API_KEY": "your-api-key",
-        "IMAGEGEN_MODEL": "gpt-image-2"
-      }
-    }
-  }
-}
-```
-
-## 6. 重启 MCP 客户端
-
-保存配置后，重启你的 MCP 客户端，让它重新加载服务定义。
-
-## 7. 验证是否接入成功
-
-可以在客户端里尝试类似下面的请求。
-
-生成图片：
-
-```text
-请生成一张极简风格的白色陶瓷杯产品图，纯色背景。
-```
-
-编辑图片：
-
-```text
-请把这张图片背景改成纯白，并保留主体阴影。
-```
-
-## 8. 可用工具
-
-接入成功后，服务会暴露以下工具：
-
-- `generate_image`
-- `edit_image`
-
-## 9. 使用说明
+## 7. 使用说明
 
 - 本地接入通常保持 `stdio` 即可。
+- Windows PowerShell 下如果需要手动启动 HTTP 传输，请使用 `.\start-http.ps1 -BindHost 127.0.0.1 -Port 3000`。不要把参数改成 `Host`，因为 `$Host` 是 PowerShell 保留的内置变量。
 - `size` 支持自定义尺寸，例如：
   - `1536x1024`
   - `1536 * 1024`
@@ -178,10 +91,10 @@ Windows 示例：
 - 如果启动失败，请优先检查：
   - `node` 路径是否正确
   - `server.mjs` 是否使用绝对路径
-  - `config.json` 或环境变量是否填写正确
+  - 配置命令是否执行成功
   - `baseUrl` 是否真的可访问
 
-## 10. 可选：手动检查脚本是否可启动
+## 8. 可选：手动检查脚本是否可启动
 
 可以先手动验证脚本本身是否能正常启动：
 

@@ -1,4 +1,7 @@
 import { generateImage } from "./lib/imagegen.mjs";
+import { assertRuntimeConfigReady } from "./lib/runtime-config.mjs";
+
+await assertRuntimeConfigReady();
 
 const result = await generateImage({
   prompt:

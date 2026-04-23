@@ -4,11 +4,6 @@
 
 `mcp-imagegen-server` is a public Model Context Protocol server for image generation and editing through an OpenAI-compatible image API.
 
-Current release support:
-
-- officially supported for macOS, Unix-like environments, and Windows local usage
-- Windows support targets Node.js 20+ with PowerShell or CMD
-
 It exposes two MCP tools:
 
 - `generate_image`
@@ -26,60 +21,42 @@ The server supports both:
   - `POST /images/generations`
   - `POST /images/edits`
 
-## Installation
+## Quick Start
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-For local MCP client setup, see the detailed guide:
+Run the local setup command:
+
+```bash
+npx mcp-imagegen-server --configure
+```
+
+The configure flow does three things:
+
+1. asks for `Base URL`, `API Key`, and optional `Model`
+2. saves the runtime config file
+3. automatically detects the current MCP client environment and installs the matching server config
+
+Supported automatic targets:
+
+- Codex
+- Claude Code
+- OpenCode
+- OpenClaw
+- fallback generic MCP JSON config when no supported client is detected, or when the local environment is ambiguous
+
+After configuration completes, restart your MCP client and call `generate_image` or `edit_image`.
+
+For full local setup instructions, see:
 
 - [Local MCP Setup Guide](./docs/local-mcp-setup.md)
 - [本地 MCP 接入教程](./docs/local-mcp-setup.zh-CN.md)
 
-For local execution:
-
-```bash
-npx mcp-imagegen-server
-```
-
-For HTTP mode:
-
-```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
-```
-
-When the server is running in HTTP mode, a lightweight config console is available at:
-
-```text
-http://127.0.0.1:3000/ui
-```
-
-The page reads and writes the real `config.json` used by the server. If any `IMAGEGEN_*` environment variable is set, the UI shows that the runtime value is currently being overridden.
-
-### Visual local configuration flow
-
-If you want to configure the local MCP server through a browser UI instead of editing JSON manually:
-
-1. Start the server once in HTTP mode:
-
-```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
-```
-
-2. Open:
-
-```text
-http://127.0.0.1:3000/ui
-```
-
-3. Fill in `Base URL`, `API Key`, and `Model`, then click `Save config`
-4. Stop the HTTP server after saving
-5. Use the normal local `stdio` setup in your MCP client
-
-This UI is still local-only. The displayed config path belongs to the machine currently running the server.
-
-## Configuration
+## Runtime Configuration
 
 Runtime configuration is loaded in this order:
 
@@ -93,7 +70,7 @@ Supported environment variables:
 - `IMAGEGEN_MODEL`
 - `IMAGEGEN_CONFIG_PATH`
 
-Default config path on macOS and Linux:
+Default config path on macOS / Linux:
 
 ```text
 $XDG_CONFIG_HOME/mcp-imagegen-server/config.json
@@ -121,9 +98,39 @@ Example config file:
 }
 ```
 
+The server refuses to start in `stdio` mode until `baseUrl` and `apiKey` are configured. If they are missing, it tells the user to run `npx mcp-imagegen-server --configure`.
+
+## Automatic Client Integration
+
+The project no longer exposes a frontend setup page and no longer asks the user to manually pick a client-specific config template.
+
+Instead, `--configure` auto-detects the environment and writes the matching MCP server definition:
+
+- Codex: updates `~/.codex/config.toml`
+- Claude Code: updates project `.mcp.json`
+- OpenCode: updates project `opencode.json`
+- OpenClaw: updates project `openclaw.json`
+- Generic fallback: writes project `.mcp.json` when no supported client is detected or when multiple clients are detectable without a clear winner
+
+## Windows Notes
+
+PowerShell users can run the configure flow with:
+
+```powershell
+.\start-configure.ps1
+```
+
+PowerShell users can start the HTTP transport with:
+
+```powershell
+.\start-http.ps1 -BindHost 127.0.0.1 -Port 3000
+```
+
+The script intentionally uses `-BindHost`, not `-Host`, because `$Host` is a built-in PowerShell variable.
+
 ## Output Files
 
-If `outputDir` is not provided, images are written under this root on macOS and Linux:
+If `outputDir` is not provided, images are written under:
 
 ```text
 $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
@@ -153,35 +160,21 @@ Supported controls include:
 - `inputImages` plus optional `maskImage` for editing flows
 - `timeoutMs` and `retryCount` for slow upstream gateways
 
-## Generic stdio client example
+## Verification
 
-Any MCP client that accepts a command-based server config can launch:
+Only verify after runtime config is saved.
 
-```json
-{
-  "command": "npx",
-  "args": ["mcp-imagegen-server"]
-}
+```bash
+npm run smoke-test
+npm run smoke-test:mcp
 ```
+
+Both smoke tests call the configured upstream image API and may incur provider cost. Do not use empty requests as a health check; they can fail because the request body is incomplete and do not validate MCP setup.
 
 ## Development
 
-Run tests:
+Run local tests:
 
 ```bash
 npm test
 ```
-
-Run the direct library smoke test:
-
-```bash
-npm run smoke-test
-```
-
-Run the MCP stdio smoke test:
-
-```bash
-npm run smoke-test:mcp
-```
-
-Both smoke tests call the configured upstream image API and may incur provider cost.

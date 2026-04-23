@@ -3,8 +3,10 @@ import { fileURLToPath } from "node:url";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { assertRuntimeConfigReady } from "./lib/runtime-config.mjs";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+await assertRuntimeConfigReady();
 const transport = new StdioClientTransport({
   command: process.execPath,
   args: [path.join(currentDirectory, "server.mjs")]

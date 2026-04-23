@@ -7,6 +7,7 @@ test("parseCliArgs defaults to stdio transport", () => {
   const args = parseCliArgs([]);
 
   assert.deepEqual(args, {
+    configure: false,
     transport: "stdio",
     host: "127.0.0.1",
     port: 3000,
@@ -27,10 +28,23 @@ test("parseCliArgs supports streamable HTTP options", () => {
   ]);
 
   assert.deepEqual(args, {
+    configure: false,
     transport: "http",
     host: "0.0.0.0",
     port: 4123,
     endpoint: "/rpc"
+  });
+});
+
+test("parseCliArgs supports configure mode", () => {
+  const args = parseCliArgs(["--configure"]);
+
+  assert.deepEqual(args, {
+    configure: true,
+    transport: "stdio",
+    host: "127.0.0.1",
+    port: 3000,
+    endpoint: "/mcp"
   });
 });
 

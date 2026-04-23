@@ -1,6 +1,6 @@
 # Local MCP Setup Guide
 
-This guide explains how a normal user can configure `mcp-imagegen-server` for local use.
+This guide explains how to connect `mcp-imagegen-server` from a local checkout without any frontend setup page.
 
 For Chinese instructions, see [本地 MCP 接入教程](./local-mcp-setup.zh-CN.md).
 
@@ -21,155 +21,68 @@ cd API-gpt-image-2-mcp
 npm install
 ```
 
-## 3. Configure the image API
+## 3. Run the configure command
 
-Using a config file is the recommended approach.
-
-Create the config directory on macOS or Linux:
+Before connecting any MCP client or running any smoke test, run:
 
 ```bash
-mkdir -p ~/.config/mcp-imagegen-server
+npx mcp-imagegen-server --configure
 ```
 
-Create this file:
-
-```text
-~/.config/mcp-imagegen-server/config.json
-```
-
-On Windows, create:
+On Windows PowerShell, you can use:
 
 ```powershell
-New-Item -ItemType Directory -Force "$env:APPDATA\\mcp-imagegen-server" | Out-Null
+.\start-configure.ps1
 ```
 
-Then place the config file at:
+The command will:
 
-```text
-%APPDATA%\mcp-imagegen-server\config.json
-```
+1. ask for `Base URL`
+2. ask for `API Key`
+3. ask for optional `Model`
+4. save the runtime config file
+5. auto-detect the local MCP client environment
+6. install the correct MCP server definition automatically
 
-Example:
+## 4. Automatic environment handling
 
-```json
-{
-  "baseUrl": "https://your-gateway.example/v1",
-  "apiKey": "your-api-key",
-  "model": "gpt-image-2"
-}
-```
+You do not need to manually choose a config format anymore.
 
-### Optional: configure through the built-in local web UI
+The configure flow will automatically target one of:
 
-If you prefer not to edit JSON manually, you can temporarily start the server in HTTP mode and use the built-in config page:
+- Codex
+- Claude Code
+- OpenCode
+- OpenClaw
+- generic MCP JSON fallback when no supported client is detected or when the local environment is ambiguous
+
+## 5. Restart the client
+
+After `--configure` finishes, restart your MCP client so it reloads the server definition.
+
+## 6. Optional verification after configuration
+
+After `Base URL` and `API Key` are saved, you can verify the integration in one of these ways:
+
+1. Ask your MCP client to call `generate_image` with a real prompt.
+2. Run the library smoke test:
 
 ```bash
-npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
+npm run smoke-test
 ```
 
-Then open:
+3. Run the MCP stdio smoke test:
 
-```text
-http://127.0.0.1:3000/ui
+```bash
+npm run smoke-test:mcp
 ```
 
-Use the page to save `Base URL`, `API Key`, and `Model` into the real local config file, then stop the HTTP server and continue with the normal local `stdio` MCP setup below.
+Do not validate the integration by sending an empty or incomplete request. That can fail for the wrong reason, such as a missing prompt, and does not prove the MCP wiring is correct.
 
-The config path shown in the page always belongs to the machine currently running the server.
-
-## 4. Add the MCP server to your local client
-
-For local usage, use the default `stdio` transport. Do not add `--transport http`.
-
-Add a server entry like this to your MCP client config:
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "node",
-      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
-    }
-  }
-}
-```
-
-If `node` is not available in your PATH, use its absolute path instead.
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "/absolute/path/to/node",
-      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"]
-    }
-  }
-}
-```
-
-Windows example:
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": ["C:\\path\\to\\API-gpt-image-2-mcp\\server.mjs"]
-    }
-  }
-}
-```
-
-## 5. Alternative: configure through environment variables
-
-If you do not want to rely on the default config file path, you can provide runtime settings directly:
-
-```json
-{
-  "mcpServers": {
-    "imagegen": {
-      "command": "node",
-      "args": ["/absolute/path/to/API-gpt-image-2-mcp/server.mjs"],
-      "env": {
-        "IMAGEGEN_BASE_URL": "https://your-gateway.example/v1",
-        "IMAGEGEN_API_KEY": "your-api-key",
-        "IMAGEGEN_MODEL": "gpt-image-2"
-      }
-    }
-  }
-}
-```
-
-## 6. Restart the MCP client
-
-After saving the config, restart your MCP client so it reloads the server definition.
-
-## 7. Verify the integration
-
-Try requests like these inside your client.
-
-Generate an image:
-
-```text
-Generate a minimalist product photo of a white ceramic cup on a plain background.
-```
-
-Edit an image:
-
-```text
-Change the background of this image to solid white while keeping the subject shadow.
-```
-
-## 8. Available tools
-
-After setup, the MCP server exposes:
-
-- `generate_image`
-- `edit_image`
-
-## 9. Notes
+## 7. Notes
 
 - Local usage should normally stay on `stdio`.
+- On Windows PowerShell, use `.\start-http.ps1 -BindHost 127.0.0.1 -Port 3000` if you need to start HTTP transport manually. Do not rename the parameter to `Host`; `$Host` is reserved by PowerShell.
 - `size` supports custom dimensions such as:
   - `1536x1024`
   - `1536 * 1024`
@@ -178,10 +91,10 @@ After setup, the MCP server exposes:
 - If startup fails, check:
   - whether `node` is correct
   - whether `server.mjs` uses an absolute path
-  - whether your `config.json` or environment variables are valid
+  - whether the configure command completed successfully
   - whether `baseUrl` is reachable
 
-## 10. Optional manual check
+## 8. Optional manual check
 
 You can verify the script itself starts correctly:
 
