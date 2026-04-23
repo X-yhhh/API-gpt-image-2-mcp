@@ -4,6 +4,8 @@
 
 英文版见 [English version](./local-mcp-setup.md)。
 
+本教程当前面向 macOS 与类 Unix shell。Windows 接入说明将在 `v0.4.0` 中补齐。
+
 ## 1. 环境要求
 
 请先确保本机具备：

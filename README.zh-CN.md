@@ -4,6 +4,11 @@
 
 `mcp-imagegen-server` 是一个公开的 Model Context Protocol 服务端，用于通过兼容 OpenAI 的图像 API 进行图片生成与编辑。
 
+当前版本支持范围：
+
+- 正式支持 macOS 与类 Unix 环境下的本地使用
+- Windows 支持计划在 `v0.4.0` 提供
+
 它暴露了两个 MCP 工具：
 
 - `generate_image`

@@ -4,6 +4,8 @@ This guide explains how a normal user can configure `mcp-imagegen-server` for lo
 
 For Chinese instructions, see [README.zh-CN](./local-mcp-setup.zh-CN.md).
 
+This guide currently targets macOS and Unix-like shells. Windows setup will be documented in `v0.4.0`.
+
 ## 1. Prerequisites
 
 Make sure your machine has:

@@ -1,6 +1,6 @@
 {
   "name": "mcp-imagegen-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "type": "module",
   "description": "Open-source MCP server for generating and editing images through an OpenAI-compatible image API.",
