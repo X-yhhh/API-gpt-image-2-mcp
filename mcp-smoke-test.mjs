@@ -16,8 +16,8 @@ const transport = new StdioClientTransport({
 
 const client = new Client(
   {
-  name: "imagegen-smoke-client",
-    version: "0.4.1"
+    name: "imagegen-smoke-client",
+    version: "0.4.2"
   },
   {
     capabilities: {}

@@ -15,7 +15,7 @@ function createJsonResponse(payload) {
   return JSON.stringify(payload);
 }
 
-async function startFakeImageGateway() {
+async function startFakeImageGateway({ responseDelayMs = 0 } = {}) {
   const requests = [];
   const server = http.createServer(async (req, res) => {
     const chunks = [];
@@ -31,6 +31,10 @@ async function startFakeImageGateway() {
       headers: req.headers,
       body
     });
+
+    if (responseDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, responseDelayMs));
+    }
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
@@ -70,7 +74,7 @@ async function startStdIoClient(env) {
   const client = new Client(
     {
       name: "imagegen-stdio-test-client",
-      version: "0.4.1"
+      version: "0.4.2"
     },
     {
       capabilities: {}
@@ -137,6 +141,48 @@ test("stdio MCP server supports prompt, reference, and edit flows", async () => 
 
     assert.match(gateway.requests[1].body.toString("utf8"), /name="image\[\]"/);
     assert.match(gateway.requests[2].body.toString("utf8"), /name="image\[\]"/);
+  } finally {
+    await stdioClient.close();
+    await gateway.close();
+  }
+});
+
+test("stdio MCP server returns a background job before the MCP client timeout", async () => {
+  const gateway = await startFakeImageGateway({ responseDelayMs: 150 });
+  const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-imagegen-stdio-"));
+  const stdioClient = await startStdIoClient({
+    IMAGEGEN_BASE_URL: gateway.baseUrl,
+    IMAGEGEN_API_KEY: "sk-test",
+    IMAGEGEN_MODEL: "gpt-image-2",
+    IMAGEGEN_MCP_SYNC_WAIT_MS: "10"
+  });
+
+  try {
+    const initial = await stdioClient.client.callTool({
+      name: "generate_image",
+      arguments: {
+        prompt: "slow prompt",
+        outputDir,
+        filename: "slow-image"
+      }
+    });
+    const initialText = initial.content[0].text;
+    const jobId = initialText.match(/Job ID: (imgjob-[^\s]+)/)?.[1];
+
+    assert.match(initialText, /Image job is still running/);
+    assert.ok(jobId);
+
+    const checked = await stdioClient.client.callTool({
+      name: "check_image_job",
+      arguments: {
+        jobId,
+        waitMs: 1000
+      }
+    });
+
+    assert.match(checked.content[0].text, /Saved image file: slow-image\.png/);
+    assert.doesNotMatch(checked.content[0].text, new RegExp(outputDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.equal(gateway.requests.length, 1);
   } finally {
     await stdioClient.close();
     await gateway.close();

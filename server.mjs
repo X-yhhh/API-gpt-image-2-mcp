@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { formatUsage, parseCliArgs } from "./lib/cli.mjs";
 import { startHttpServer } from "./lib/http-server.mjs";
+import { STDIO_TRANSPORT_POLICY } from "./lib/imagegen.mjs";
 import { createImageGenServer } from "./lib/mcp-server.mjs";
 
 const argv = process.argv.slice(2);
@@ -27,7 +28,7 @@ if (args.transport === "http") {
   process.once("SIGTERM", shutdown);
   console.error(`mcp-imagegen-server listening on http://${args.host}:${args.port}${args.endpoint}`);
 } else {
-  const server = createImageGenServer();
+  const server = createImageGenServer(STDIO_TRANSPORT_POLICY);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

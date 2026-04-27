@@ -2,22 +2,23 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-`mcp-imagegen-server` is a public Model Context Protocol server for image generation and editing through an OpenAI-compatible image API.
+`mcp-imagegen-server` is a local-first Model Context Protocol server for image generation and editing through an OpenAI-compatible image API. The recommended transport is `stdio` for local MCP clients; streamable HTTP is retained as an advanced compatibility mode for hosted or remote deployments.
 
 Current release support:
 
-- `v0.4.1` is the current cross-platform release baseline for macOS, Unix-like environments, and Windows local usage
+- `v0.4.2` is the current cross-platform release baseline for macOS, Unix-like environments, and Windows local usage
 - `main` is the only active release branch; old platform-specific `release/*` branches have been retired
 
-It exposes two MCP tools:
+It exposes three MCP tools:
 
 - `generate_image`
 - `edit_image`
+- `check_image_job`
 
-The server supports both:
+The server supports two transports:
 
-- `stdio` transport for local MCP clients
-- streamable HTTP transport for hosted or remote MCP deployments
+- `stdio` transport for local MCP clients. This is the default and recommended mode.
+- streamable HTTP transport for advanced or compatibility deployments. HTTP mode has stricter input and output boundaries.
 
 ## Requirements
 
@@ -38,10 +39,17 @@ For local execution:
 npx mcp-imagegen-server
 ```
 
-For HTTP mode:
+For advanced HTTP mode:
 
 ```bash
 npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
+```
+
+To require a bearer token for HTTP clients in advanced HTTP mode:
+
+```bash
+IMAGEGEN_MCP_AUTH_TOKEN=replace-with-a-random-token \
+  npx mcp-imagegen-server --transport http --host 127.0.0.1 --port 3000
 ```
 
 ## Configuration
@@ -57,6 +65,13 @@ Supported environment variables:
 - `IMAGEGEN_API_KEY`
 - `IMAGEGEN_MODEL`
 - `IMAGEGEN_CONFIG_PATH`
+- `IMAGEGEN_MCP_AUTH_TOKEN` for protecting the HTTP MCP endpoint with `Authorization: Bearer <token>`
+- `IMAGEGEN_MCP_SYNC_WAIT_MS` for limiting how long `generate_image` and `edit_image` wait before returning a background job ID
+
+Credential boundaries:
+
+- `IMAGEGEN_API_KEY` is the upstream image gateway credential used by this server when calling the OpenAI-compatible image API.
+- `IMAGEGEN_MCP_AUTH_TOKEN` is a separate credential for authenticating MCP HTTP clients to this server. It does not replace the upstream image gateway key.
 
 Default config path on macOS and Linux:
 
@@ -92,9 +107,27 @@ If you do not want to rely on the default config file path, you can pass runtime
 - `IMAGEGEN_API_KEY`
 - `IMAGEGEN_MODEL`
 
+## Transport Differences
+
+`stdio` is local-first and keeps the full local workflow:
+
+- Accepts local file paths, base64 `data:` URLs, and public `http/https` URLs for reference images and masks.
+- Allows `outputDir` for explicit local output placement.
+- Writes generated files to the requested `outputDir` or the managed image data root.
+
+HTTP mode is intentionally narrower:
+
+- Accepts only base64 `data:` URLs and public `http/https` URLs for `referenceImages`, `inputImages`, and `maskImage`.
+- Rejects local file paths.
+- Rejects `outputDir`; use `projectName` and `filename` only. Output always stays under the managed image data root.
+- Rejects request bodies larger than 20 MiB with HTTP `413` and a JSON-RPC style error body.
+- Downloads remote image URLs only after public-address validation, follows at most 3 redirects, limits each remote image to 20 MiB, and applies a 15 second download timeout.
+
+Remote URL validation applies to every redirect hop. The server rejects non-HTTP schemes, URLs with embedded usernames or passwords, localhost-style names, and DNS results that point to loopback, private, link-local, ULA, multicast, reserved, or documentation address ranges.
+
 ## Output Files
 
-If `outputDir` is not provided, images are written under this root on macOS and Linux:
+In `stdio` mode, you may pass `outputDir` to choose an explicit local output directory. If `outputDir` is not provided, images are written under this root on macOS and Linux:
 
 ```text
 $XDG_DATA_HOME/mcp-imagegen-server/images/<project-name>/
@@ -112,7 +145,7 @@ On Windows, the default output root is:
 %LOCALAPPDATA%\mcp-imagegen-server\images\<project-name>\
 ```
 
-If `projectName` is omitted, the server derives one from the current working directory when possible.
+If `projectName` is omitted, the server derives one from the current working directory when possible. In HTTP mode, `outputDir` is not accepted; `projectName` and `filename` are the only output path controls.
 
 ## Tool Inputs
 
@@ -122,7 +155,11 @@ Supported controls include:
 - `latencyMode="fast"` for lower-latency drafts
 - `referenceImages` for reference-based generation
 - `inputImages` plus optional `maskImage` for editing flows
+- `projectName` and `filename` for managed output naming
+- `outputDir` for local `stdio` use only
 - `timeoutMs` and `retryCount` for slow upstream gateways
+
+Long-running image calls are protected from MCP client-side call timeouts. By default, `generate_image` and `edit_image` wait for a bounded period; if the upstream gateway is still working, the tool returns a `Job ID` instead of failing. Call `check_image_job` with that ID to retrieve the result after the image is saved. `IMAGEGEN_MCP_SYNC_WAIT_MS` can lower this wait during testing or tune it for clients with shorter MCP timeouts.
 
 ## Generic stdio client example
 
@@ -145,7 +182,7 @@ Recommended path:
 2. Create `config.json` for the image gateway.
 3. Add the server to your MCP client with `stdio`.
 4. Restart the MCP client.
-5. Verify `generate_image` and `edit_image` are available.
+5. Verify `generate_image`, `edit_image`, and `check_image_job` are available.
 
 If you need a manual check first:
 
@@ -412,10 +449,11 @@ After setup, the MCP server exposes:
 
 - `generate_image`
 - `edit_image`
+- `check_image_job`
 
 ## Current Version
 
-- `v0.4.1`: current and only documented public release baseline; future releases ship from `main` and use this baseline as version `1`
+- `v0.4.2`: current and only documented public release baseline; future releases ship from `main` and use this baseline as version `1`
 
 Release policy details: [Release Policy](./docs/release-policy.md)
 
